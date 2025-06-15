@@ -6,7 +6,7 @@ const path = require('path');
 
 const app = express();
 const PORT = 3000;
-
+const chromium = require('chrome-aws-lambda');
 app.get('/scrape', async (req, res) => {
     const targetURL = req.query.url;
 
@@ -15,9 +15,10 @@ app.get('/scrape', async (req, res) => {
     }
 
     try {
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        const browser = await chromium.puppeteer.launch({
+            args: chromium.args,
+            executablePath: await chromium.executablePath,
+            headless: chromium.headless,
         });
 
         const page = await browser.newPage();
