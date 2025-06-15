@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Scraper CSV Tool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        button {
+            padding: 1rem 2rem;
+            background-color: #007BFF;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #aaa;
+        }
+        #status {
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Scrape Data to CSV</h1>
+        <p>Enter the URL you want to scrape:</p>
+        <input type="text" id="urlInput" placeholder="https://example.com/page" />
+        <button id="scrapeBtn">Scrape & Download CSV</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const scrapeBtn = document.getElementById('scrapeBtn');
+        const urlInput = document.getElementById('urlInput');
+        const status = document.getElementById('status');
+
+        scrapeBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            if (!url) {
+                status.textContent = "⚠️ Please enter a valid URL.";
+                return;
+            }
+
+            status.textContent = "⏳ Scraping in progress...";
+
+            scrapeBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/scrape?url=${encodeURIComponent(url)}`);
+                if (!response.ok) throw new Error("Failed to fetch file");
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'scraped_data.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                status.textContent = "✅ CSV file downloaded!";
+            } catch (err) {
+                console.error(err);
+                status.textContent = "❌ Error occurred while scraping.";
+            } finally {
+                scrapeBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
