@@ -1,12 +1,12 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
+const chromium = require('chrome-aws-lambda');
 const { Parser } = require('json2csv');
 const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
-const chromium = require('chrome-aws-lambda');
+const PORT = process.env.PORT || 3000;
+
 app.get('/scrape', async (req, res) => {
     const targetURL = req.query.url;
 
@@ -19,11 +19,11 @@ app.get('/scrape', async (req, res) => {
             args: chromium.args,
             executablePath: await chromium.executablePath,
             headless: chromium.headless,
+            defaultViewport: chromium.defaultViewport,
         });
 
         const page = await browser.newPage();
         await page.goto(targetURL, { waitUntil: 'networkidle2' });
-
         await page.waitForSelector('.panel-block');
 
         let allData = [];
@@ -102,7 +102,7 @@ app.get('/scrape', async (req, res) => {
         const parser = new Parser();
         const csv = parser.parse(allData);
 
-        const filePath = path.join(__dirname, 'scraped_data.csv');
+        const filePath = path.join('/tmp', 'scraped_data.csv'); // ✅ Use /tmp on Render
         fs.writeFileSync(filePath, csv);
 
         res.download(filePath, 'scraped_data.csv', err => {
@@ -110,7 +110,6 @@ app.get('/scrape', async (req, res) => {
                 console.error('Error sending file:', err);
                 res.status(500).send('Error sending file');
             }
-            fs.unlink(filePath, () => {});
         });
 
     } catch (error) {
