@@ -9,6 +9,6 @@
     "chrome-aws-lambda": "^10.1.0",
     "express": "^5.1.0",
     "json2csv": "^6.0.0-alpha.2",
-    "puppeteer-core": "^21.3.8"
+    "puppeteer-core": "10.4.0"
   }
 }
